@@ -1,0 +1,14 @@
+# Visual Studio
+.vs/
+*.user
+
+# .NET
+**/bin/
+**/obj/
+
+# Node
+node_modules/
+dist/
+
+# SQLite
+*.sqlite
