@@ -9,6 +9,7 @@
   <ItemGroup>
     <None Update="Bookstore (1).sqlite">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
   </ItemGroup>
 
