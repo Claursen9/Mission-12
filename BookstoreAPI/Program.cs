@@ -1,9 +1,11 @@
 using BookstoreAPI.Data;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+
 // Azure App Service stores files on a network share (C:\home\) where SQLite
 // file locking can fail. Copy the database to the local temp directory instead.
 var deployedDb = Path.Combine(builder.Environment.ContentRootPath, "Bookstore (1).sqlite");
@@ -28,20 +30,34 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Return error details in response body to help diagnose 500s
+app.UseExceptionHandler(exApp => exApp.Run(async ctx =>
+{
+    ctx.Response.StatusCode = 500;
+    ctx.Response.ContentType = "application/json";
+    var ex = ctx.Features.Get<IExceptionHandlerFeature>()?.Error;
+    await ctx.Response.WriteAsJsonAsync(new
+    {
+        error = ex?.Message,
+        inner = ex?.InnerException?.Message,
+        type = ex?.GetType().Name
+    });
+}));
+
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseCors("AllowReact");
 app.MapControllers();
 
-// Temporary debug endpoint - remove after confirming deployment works
-var localDbForDebug = Path.Combine(Path.GetTempPath(), "Bookstore.sqlite");
+// Debug endpoints - remove after confirming deployment works
 app.MapGet("/api/debug", (IWebHostEnvironment env) => new
 {
     ContentRootPath = env.ContentRootPath,
     TempPath = Path.GetTempPath(),
-    LocalDbExists = File.Exists(localDbForDebug),
-    LocalDbPath = localDbForDebug,
-    DeployedDbExists = File.Exists(Path.Combine(env.ContentRootPath, "Bookstore (1).sqlite")),
+    LocalDbPath = localDb,
+    LocalDbExists = File.Exists(localDb),
+    DeployedDbExists = File.Exists(deployedDb),
+    DbPathInUse = dbPath,
 });
 
 app.MapGet("/api/debug2", async (BookstoreContext db) =>
