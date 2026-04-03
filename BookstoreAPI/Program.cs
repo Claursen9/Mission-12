@@ -35,5 +35,18 @@ app.MapGet("/api/debug", (IWebHostEnvironment env) => new
     RootFiles = Directory.GetFiles(env.ContentRootPath).Select(Path.GetFileName).ToArray()
 });
 
+app.MapGet("/api/debug2", async (BookstoreContext db) =>
+{
+    try
+    {
+        var count = await db.Books.CountAsync();
+        return Results.Ok(new { success = true, count });
+    }
+    catch (Exception ex)
+    {
+        return Results.Ok(new { success = false, error = ex.Message, inner = ex.InnerException?.Message });
+    }
+});
+
 app.MapFallbackToFile("index.html");
 app.Run();
