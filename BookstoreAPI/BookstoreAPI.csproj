@@ -31,6 +31,11 @@
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       </ResolvedFileToPublish>
+      <!-- Explicitly include SQLite database in publish output -->
+      <ResolvedFileToPublish Include="$(ProjectDir)Bookstore %281%29.sqlite">
+        <RelativePath>Bookstore (1).sqlite</RelativePath>
+        <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
     </ItemGroup>
   </Target>
 
