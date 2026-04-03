@@ -10,5 +10,6 @@
 node_modules/
 dist/
 
-# SQLite
+# SQLite (exclude generated/local databases but keep the seed database)
 *.sqlite
+!BookstoreAPI/Bookstore (1).sqlite
