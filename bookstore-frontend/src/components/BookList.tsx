@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import ToastNotification from './ToastNotification';
+import { API_URL } from '../api';
 
 interface Book {
   bookID: number;
@@ -41,7 +42,7 @@ export default function BookList() {
 
   // Fetch categories once on mount
   useEffect(() => {
-    fetch('http://localhost:5006/api/books/categories')
+    fetch(`${API_URL}/api/books/categories`)
       .then(res => res.json())
       .then(data => setCategories(data));
   }, []);
@@ -55,7 +56,7 @@ export default function BookList() {
     });
     if (selectedCategory) params.append('category', selectedCategory);
 
-    fetch(`http://localhost:5006/api/books?${params.toString()}`)
+    fetch(`${API_URL}/api/books?${params.toString()}`)
       .then(res => res.json())
       .then(data => {
         setBooks(data.books);
