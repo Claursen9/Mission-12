@@ -4,7 +4,14 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-var dbPath = Path.Combine(builder.Environment.ContentRootPath, "Bookstore (1).sqlite");
+// Azure App Service stores files on a network share (C:\home\) where SQLite
+// file locking can fail. Copy the database to the local temp directory instead.
+var deployedDb = Path.Combine(builder.Environment.ContentRootPath, "Bookstore (1).sqlite");
+var localDb = Path.Combine(Path.GetTempPath(), "Bookstore.sqlite");
+if (!File.Exists(localDb) && File.Exists(deployedDb))
+    File.Copy(deployedDb, localDb);
+var dbPath = File.Exists(localDb) ? localDb : deployedDb;
+
 builder.Services.AddDbContext<BookstoreContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
 
@@ -27,12 +34,14 @@ app.UseCors("AllowReact");
 app.MapControllers();
 
 // Temporary debug endpoint - remove after confirming deployment works
+var localDbForDebug = Path.Combine(Path.GetTempPath(), "Bookstore.sqlite");
 app.MapGet("/api/debug", (IWebHostEnvironment env) => new
 {
     ContentRootPath = env.ContentRootPath,
-    DbPath = Path.Combine(env.ContentRootPath, "Bookstore (1).sqlite"),
-    DbExists = File.Exists(Path.Combine(env.ContentRootPath, "Bookstore (1).sqlite")),
-    RootFiles = Directory.GetFiles(env.ContentRootPath).Select(Path.GetFileName).ToArray()
+    TempPath = Path.GetTempPath(),
+    LocalDbExists = File.Exists(localDbForDebug),
+    LocalDbPath = localDbForDebug,
+    DeployedDbExists = File.Exists(Path.Combine(env.ContentRootPath, "Bookstore (1).sqlite")),
 });
 
 app.MapGet("/api/debug2", async (BookstoreContext db) =>
