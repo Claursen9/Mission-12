@@ -25,5 +25,15 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseCors("AllowReact");
 app.MapControllers();
+
+// Temporary debug endpoint - remove after confirming deployment works
+app.MapGet("/api/debug", (IWebHostEnvironment env) => new
+{
+    ContentRootPath = env.ContentRootPath,
+    DbPath = Path.Combine(env.ContentRootPath, "Bookstore (1).sqlite"),
+    DbExists = File.Exists(Path.Combine(env.ContentRootPath, "Bookstore (1).sqlite")),
+    RootFiles = Directory.GetFiles(env.ContentRootPath).Select(Path.GetFileName).ToArray()
+});
+
 app.MapFallbackToFile("index.html");
 app.Run();
